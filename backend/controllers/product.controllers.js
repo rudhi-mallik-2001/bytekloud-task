@@ -5,25 +5,17 @@ import { Product } from "../models/product.model.js"
 
 const addproduct = asyncHandler(async (req, res) => {
 
-    // get user details from frontend
-    // validation - not empty
-    // check if user already exists: username, email
-    // check for images, check for avatar
-    // upload them to cloudinary, avatar
-    // create user object - create entry in db
-    // remove password and refresh token field from response
-    // check for user creation
-    // return res
+    // get product details from frontend
 
     const { title, price, category, description } = req.body.data
-    // console.log("price: ", price);
+    
 
     if (
         [title, price, category, description].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
-
+  // check if product already exists:
     const existedproduct = await Product.findOne({
         $or: [{ title }]
     })
@@ -31,7 +23,7 @@ const addproduct = asyncHandler(async (req, res) => {
     if (existedproduct) {
         throw new ApiError(409, "User with email or username already exists")
     }
-
+    // create product object - create entry in db
     const product = await Product.create({
         title,
         price,
@@ -42,11 +34,12 @@ const addproduct = asyncHandler(async (req, res) => {
     const createdProduct = await Product.findById(product._id).select(
         "-password -refreshToken"
     )
+    // check for user creation
 
     if (!createdProduct) {
         throw new ApiError(500, "Something went wrong while registering the user")
     }
-
+    // return res
     return res.status(201).json(
         new ApiResponse(200, createdProduct, "User registered Successfully")
     )
